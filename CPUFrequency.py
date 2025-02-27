@@ -10,7 +10,8 @@ jump_conn = Connection(jump_host)
 dest_conn = Connection(dest_host, gateway=jump_conn)
 
 # Configuration
-path = "/u/home/vit/dealii/examples/step-37/Evaluations/CPUFrequency/"
+filename = "Step-37"
+path = f"/u/home/vit/dealii/examples/{filename.lower()}/Evaluations/CPUFrequency/"
 directories = ["50Watt/", "75Watt/", "100Watt/", "175Watt/", "253Watt/"]
 
 configurations = {
@@ -88,4 +89,4 @@ process_core_scaling("P")
 process_core_scaling("E")
 
 # Plot the data
-plot.plotCPUFrequency(datasets, "Step-37")  
+plot.plotCPUFrequency(datasets, filename)  
