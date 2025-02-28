@@ -2,7 +2,7 @@ from fabric import Connection
 import re
 import numpy as np
 import PlotData as plot
-import PowerCappingTable as table
+import CreateTable as table
 
 jump_host = f"vit@login.caps.in.tum.de"
 dest_host = f"vit@regale.caps.in.tum.de"

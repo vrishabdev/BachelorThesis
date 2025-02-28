@@ -10,7 +10,7 @@ jump_conn = Connection(jump_host)
 dest_conn = Connection(dest_host, gateway=jump_conn)
 
 # Configuration
-filename = "Step-37"
+filename = "Step-48"
 path = f"/u/home/vit/dealii/examples/{filename.lower()}/Evaluations/CPUFrequency/"
 directories = ["50Watt/", "75Watt/", "100Watt/", "175Watt/", "253Watt/"]
 
