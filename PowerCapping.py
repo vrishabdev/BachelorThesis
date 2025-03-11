@@ -10,7 +10,7 @@ dest_host = f"vit@regale.caps.in.tum.de"
 jump_conn = Connection(jump_host)
 dest_conn = Connection(dest_host, gateway=jump_conn)
 
-#dataset: 3 graphs(allocation policy), 5 fuctions(PowerCap) per graph, 9 data points(core allocation) per PowerCap
+# dataset: 3 graphs(allocation policy), 5 fuctions(PowerCap) per graph, 9 data points(core allocation) per PowerCap
 absolute_duration_time_dataset = np.zeros((3, 5, 9), dtype=float)
 relative_duration_time_dataset = np.zeros((3, 5, 9) , dtype=float)
 absolute_energy_consumption_dataset = np.zeros((3, 5, 9), dtype=float)
@@ -40,28 +40,31 @@ for i in range(3):
             for k in range(9):
                 file_content = dest_conn.run(f'cat "{csv_files[k]}"', hide=True).stdout
 
-                #absolute_duration_time in seconds
+                # absolute_duration_time in seconds
                 absolute_duration_time_dataset[i, j, k] = extract_value(r'(\d+),ns,duration_time', file_content) / 1_000_000_000
 
-                #absolute_ipc
+                # absolute_ipc
                 instructions = extract_value(r'(\d+),,cpu_atom/instructions/', file_content)
                 instructions += extract_value(r'(\d+),,cpu_core/instructions/', file_content)
                 cycles = extract_value(r'(\d+),,cpu_atom/cycles/', file_content);
                 cycles += extract_value(r'(\d+),,cpu_core/cycles/', file_content)
                 relative_ipc_dataset[i, j, k] = instructions / cycles
 
+                # values for roofline model
+                # TODO
+
             result = dest_conn.run(f"ls -tr {path}{directories[j]}{sub_directories_energy[i]}*.csv", hide=True)
             csv_files = result.stdout.strip().split("\n")
             for k in range(9):
                 file_content = dest_conn.run(f'cat "{csv_files[k]}"', hide=True).stdout
                 
-                #absolute_energy_consumption
+                # absolute_energy_consumption
                 absolute_energy_consumption_dataset[i, j, k] = extract_value(r'(\d+),\d+,Joules,power/energy-pkg/', file_content)
 
-                #absolute_edp
+                # absolute_edp
                 absolute_edp_dataset[i, j, k] = absolute_duration_time_dataset[i, j, k] * absolute_energy_consumption_dataset[i, j, k]
 
-#calculate relative values
+# calculate relative values
 datasets = {
     "duration_time": (absolute_duration_time_dataset, relative_duration_time_dataset),
     "energy_consumption": (absolute_energy_consumption_dataset, relative_energy_consumption_dataset),
@@ -78,11 +81,11 @@ for i in range(3):
                 else:
                     relative[i, j, :] = absolute[i, j, :] / base_value
 
-#plot the data
+# plot the data
 dataset = [absolute_duration_time_dataset, relative_duration_time_dataset,
         absolute_energy_consumption_dataset, relative_energy_consumption_dataset,
         absolute_edp_dataset, relative_edp_dataset, relative_ipc_dataset]
 plot.plotPowerCapping(dataset, filename)
 
-#create table
+# create table
 table.createTable(absolute_duration_time_dataset, absolute_energy_consumption_dataset, filename)

@@ -2,6 +2,7 @@ from fabric import Connection
 import re
 import numpy as np
 import PlotData as plot
+import Roofline as roofline
 
 jump_host = f"vit@login.caps.in.tum.de"
 dest_host = f"vit@regale.caps.in.tum.de"
@@ -10,7 +11,7 @@ jump_conn = Connection(jump_host)
 dest_conn = Connection(dest_host, gateway=jump_conn)
 
 # Configuration
-filename = "Step-48"
+filename = "Step-37"
 path = f"/u/home/vit/dealii/examples/{filename.lower()}/Evaluations/CPUFrequency/"
 directories = ["50Watt/", "75Watt/", "100Watt/", "175Watt/", "253Watt/"]
 
@@ -31,6 +32,8 @@ for core_type, config in configurations.items():
         "relative_edp": np.zeros((5, config["num_freq"]), dtype=float),
         "absolute_ipc": np.zeros((5, config["num_freq"]), dtype=float),
         "relative_ipc": np.zeros((5, config["num_freq"]), dtype=float),
+        "W": np.zeros((5, config["num_freq"]), dtype=float), #flops
+        "Q": np.zeros((5, config["num_freq"]), dtype=float), #mops
     }
 
 def extract_value(pattern, content):
@@ -59,6 +62,16 @@ def process_core_scaling(core_type):
                     cycles = extract_value(r'(\d+),,cpu_atom/cycles/', file_content)
                     cycles += extract_value(r'(\d+),,cpu_core/cycles/', file_content)
                     datasets[core_type]["absolute_ipc"][i, j] = instructions / cycles
+
+                    #W - flops
+                    datasets[core_type]["W"][i, j] = extract_value(r'(\d+),,cpu_core/fp_arith_inst_retired.scalar_double/', file_content)
+                    datasets[core_type]["W"][i, j] += extract_value(r'(\d+),,cpu_core/fp_arith_inst_retired.128b_packed_double/', file_content)
+
+                    #Q - mops
+                    datasets[core_type]["Q"][i, j] = extract_value(r'(\d+),,cpu_core/mem-stores/', file_content)
+                    datasets[core_type]["Q"][i, j] += extract_value(r'(\d+),,cpu_atom/mem-stores/', file_content)
+                    datasets[core_type]["Q"][i, j] += extract_value(r'(\d+),,cpu_core/mem-loads/', file_content)
+                    datasets[core_type]["Q"][i, j] += extract_value(r'(\d+),,cpu_atom/mem-loads/', file_content)
 
                 result = dest_conn.run(f"ls -tr {path}{directories[i]}{sub_dirs[1]}*.csv", hide=True)
                 csv_files = result.stdout.strip().split("\n")
@@ -90,3 +103,16 @@ process_core_scaling("E")
 
 # Plot the data
 plot.plotCPUFrequency(datasets, filename)  
+
+# Plot point in Roofline, OI=W/Q, P=W/T
+"""
+print(f"W = {datasets["P"]["W"][4, 10]}")
+print(f"Q = {datasets["P"]["Q"][4, 10]}")
+OI = datasets["P"]["W"][4, 10] / datasets["P"]["Q"][4, 10]
+P = datasets["P"]["W"][4, 10] / max(datasets["P"]["W"][4, 10] * 4.914e-13, datasets["P"]["Q"][4, 10] * 3.195e-11)
+P /= 2.035e12
+print(f"T = {max(datasets["P"]["W"][4, 10] * 4.914e-13, datasets["P"]["Q"][4, 10] * 3.195e-11)}")
+print(f"OI = {OI}")
+print(f"P = {P}")
+roofline.plotPoint(OI, P, filename)"
+"""

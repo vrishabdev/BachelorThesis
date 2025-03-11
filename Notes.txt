@@ -1,0 +1,64 @@
+For single precision:
+P-Core bytes/cycle:
+- AVX2 (256-bit SIMD width)
+- each P-Core has two 256-bit FMA units (Fused Multiply Add)
+- a 256-bit FMA operates on 8 single-precision (FP32) values
+- each FMA does 2 operations per cycle (multiply + add)
+- 8 * 2 * 2 = 32 Flops/cycle per P-Core
+
+E-Core bytes/cycle:
+- AVX2 (128-bit SIMD width)
+- Each E-Core has one 128-bit FMA unit (Fused Multiply Add)
+- a 128-bit FMA operates on 4 single-precision (FP32) values
+- each FMA does 2 operations per cycle (multiply + add)
+- 4 * 2 = 8 Flops/cycle per E-Core
+
+Compute-bound region:
+- Max Flops/s = #cores * (CPU Frequency/second) * Flops per Cycle
+- P-Core: 8 * 5.8GHz * 32Flops/cycle = 1.485 TFLOP/s
+- E-Core: 16 * 4.3GHz * 8Flops/cycle = 0.550 TFLOP/s
+- 1.485 TFLOP/s + 0.550 TFLOP/s = 2.035 TFLOP/s
+
+Memory-bound region:
+Copy, Scale, Add, Triad
+(30279.7 + 29559.5 + 32349.9 + 32832.1) / 4 = 31255,3 MB/s = 31,3 GB/s            //streaming benchmark results
+Max Operational Intensity = Max Flops/s  /  Max Memory Bandwidth (Bytes/s)
+                          = 2.035 TFlops / 31,3 GB/s =  Flops/Byte 
+                          = 65,02 Flops/Byte
+
+Memory-bound region:
+P(I) = I * B -> linear function
+
+1 GFlop = 10⁹ Flops
+1 TFlop = 1000 GFlops
+
+TIME:
+I = W/Q
+P = W/T
+T ≡ max (W * Tﬂop , Q * Tmem)
+Tflop = (max operational intensity)⁻¹
+Tmem = (max memory BW)⁻¹
+B_tau = Tmem / Tflop
+
+ENERGY:
+E ≡ W * Eflop + Q * Emem + E0(T)
+  = 2,035TFLOP * (253J/s / 2,035TFLOP) + 31,3GB/s * (253J/s / 31,3GB/s) + 3,74J
+  = 506J + 3,74J
+  = 509,74J
+E0(T) = 3,74 Joules, perf stat -r 10 -a -e power/energy-pkg/ sleep 1              //-a -> system-wide
+Eflop = Max Power Consumption / Max Flops/s
+      = 253J/s / 2,035 TFLOP/s 
+      = 1,24*10⁻¹⁰J/Flop
+Emem = Max Power Consumption / Max Memory Bandwidth
+     = 253J/s / 31,3GB/s
+     = = 8,08nJ/Byte
+
+
+
+
+W = scalar * 1 + 128b_packed_single * 4 + 128_b_packed_double * 2
+Q = cpu_core/mem-loads/ + cpu_atom/mem-loads/ + cpu_core/mem-stores/ + cpu_atom/mem-stores/
+
+First try to determine these values theoretically:
+For Emem measure how much energy the streaming benchmark uses.
+For Eflop find a benchmark and measure energy with power/energy-cores/
