@@ -4,13 +4,13 @@ metrics = ["absolute_duration_time", "relative_duration_time",
             "absolute_energy_consumption", "relative_energy_consumption",
             "absolute_edp", "relative_edp", "relative_ipc"]
 
-yLabels = ["Absolute Duration Time in Seconds", "Relative Duration Time",
-            "Absolute Energy Consumption in Joules", "Relative Energy Consumption",
-            "Absolute EDP", "Relative EDP", "Relative IPC"]
+yLabels = ["Duration Time in Seconds", "Relative Duration Time",
+            "Energy Consumption in Joules", "Relative Energy Consumption",
+            "EDP", "Relative EDP", "Relative IPC"]
 
-power_caps = ["50Watt", "75Watt", "100Watt", "175Watt", "253Watt"]
+power_caps = ["50 W", "75 W", "100 W", "175 W", "253 W"]
 
-colors = ["#4A90A2", "#4C9A81", "#7161EF", "#D08C60", "#B85042"]
+colors = ["#00A651", "#0073E6", "#A569BD", "#FFC300", "#FF5733"]
 
 num_cores = [2, 4, 8, 12, 16, 20, 24, 28, 32]
 
@@ -22,29 +22,45 @@ def plotCoreAllocation(dataset, filename):
         for j in range(3):
             plt.plot(num_cores, dataset[i][j], label=allocation_policies[j], color=colors[j], marker="o")
         
-        plt.xlabel("Number of Cores")
-        plt.ylabel(yLabels[i])
-        plt.title(f"{filename}")
-        plt.legend()
+        plt.xlabel("Number of Threads", fontsize=20)
+        plt.ylabel(yLabels[i], fontsize=20)
+        # plt.title(f"{filename}")
+        plt.xticks(fontsize=18)
+        plt.yticks(fontsize=18)
+        plt.legend(fontsize=15, loc="upper center", bbox_to_anchor=(0.5, -0.25), ncol=5)
         plt.grid(True)
+        plt.tight_layout()
         plt.savefig(f"./Plots/{filename}/CoreAllocation/{metrics[i]}.png")
         plt.close()
 
 def plotPowerCapping(dataset, filename):
     # one graph for each policy
     for i, policy in enumerate(allocation_policies):
-        plt.figure(figsize=(10, 6))
         # one graph for each metric
         for k, data in enumerate(dataset):
+            plt.figure(figsize=(12, 8)) 
             for j, (power_cap, color) in enumerate(zip(power_caps, colors)):
-                plt.plot(num_cores, data[i, j, :], label=power_cap, color=color, marker='o')
+                plt.plot(num_cores, data[i, j, :], 
+                        label=power_cap, 
+                        color=color, 
+                        marker='o',
+                        linewidth=5,  # Thicker lines
+                        markersize=15)  # Larger markers
             
-            plt.xlabel("Number of Cores")
-            plt.ylabel(yLabels[k])
-            plt.title(f"{filename} - {policy}")
-            plt.legend()
+            plt.xlabel("Number of Threads", fontsize=24) 
+            plt.ylabel(yLabels[k], fontsize=24)
+            plt.xticks(fontsize=22)  
+            plt.yticks(fontsize=22)
+            plt.legend(fontsize=22,
+                      loc="upper center",
+                      bbox_to_anchor=(0.5, -0.2), 
+                      ncol=5,
+                      framealpha=0.5)
+            
             plt.grid(True)
-            plt.savefig(f"./Plots/{filename}/PowerCapping/{policy}/{metrics[k]}.png")
+            plt.tight_layout()
+            plt.savefig(f"./Plots/{filename}/PowerCapping/{policy}/{metrics[k]}.png", 
+                       bbox_inches='tight')
             plt.close()
 
 def plotCPUFrequency(datasets, filename):
@@ -56,14 +72,26 @@ def plotCPUFrequency(datasets, filename):
     for metric_index, metric in enumerate(metrics):
         for core_type in ["P", "E"]:
             cpu_frequency = cpu_freqs[core_type]
-            plt.figure(figsize=(8, 6))
+            plt.figure(figsize=(12, 8))
             for i, (power_cap, color) in enumerate(zip(power_caps, colors)):
-                plt.plot(cpu_frequency, datasets[core_type][metric][i, :], label=power_cap, color=color, marker='o')
+                plt.plot(cpu_frequency, datasets[core_type][metric][i, :],
+                         label=power_cap,
+                         color=color,
+                         marker='o',
+                         linewidth=5,
+                         markersize=15)
 
-            plt.xlabel(f"{core_type}-Core Frequency (GHz)")
-            plt.ylabel(yLabels[metric_index])
-            plt.title(f"{filename} - {core_type}Core Frequency Scaling")
-            plt.legend()
+            plt.xlabel(f"{core_type}-Core Frequency (GHz)", fontsize=24)
+            plt.ylabel(yLabels[metric_index], fontsize=24)
+            # plt.title(f"{filename} - {core_type}Core Frequency Scaling")
+            plt.xticks(fontsize=22)
+            plt.yticks(fontsize=22)
+            plt.legend(fontsize=22,
+                       loc="upper center",
+                       bbox_to_anchor=(0.5, -0.2),
+                       ncol=5,
+                       framealpha=0.5)
             plt.grid(True)
+            plt.tight_layout()
             plt.savefig(f"./Plots/{filename}/CPUFrequency/{core_type}CoreScaling/{metric}.png")
             plt.close()

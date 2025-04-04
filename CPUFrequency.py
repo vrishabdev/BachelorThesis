@@ -2,7 +2,6 @@ from fabric import Connection
 import re
 import numpy as np
 import PlotData as plot
-import Roofline as roofline
 
 jump_host = f"vit@login.caps.in.tum.de"
 dest_host = f"vit@regale.caps.in.tum.de"
@@ -11,7 +10,7 @@ jump_conn = Connection(jump_host)
 dest_conn = Connection(dest_host, gateway=jump_conn)
 
 # Configuration
-filename = "Step-37"
+filename = "Step-22"
 path = f"/u/home/vit/dealii/examples/{filename.lower()}/Evaluations/CPUFrequency/"
 directories = ["50Watt/", "75Watt/", "100Watt/", "175Watt/", "253Watt/"]
 
@@ -103,16 +102,3 @@ process_core_scaling("E")
 
 # Plot the data
 plot.plotCPUFrequency(datasets, filename)  
-
-# Plot point in Roofline, OI=W/Q, P=W/T
-"""
-print(f"W = {datasets["P"]["W"][4, 10]}")
-print(f"Q = {datasets["P"]["Q"][4, 10]}")
-OI = datasets["P"]["W"][4, 10] / datasets["P"]["Q"][4, 10]
-P = datasets["P"]["W"][4, 10] / max(datasets["P"]["W"][4, 10] * 4.914e-13, datasets["P"]["Q"][4, 10] * 3.195e-11)
-P /= 2.035e12
-print(f"T = {max(datasets["P"]["W"][4, 10] * 4.914e-13, datasets["P"]["Q"][4, 10] * 3.195e-11)}")
-print(f"OI = {OI}")
-print(f"P = {P}")
-roofline.plotPoint(OI, P, filename)"
-"""
