@@ -30,7 +30,7 @@ plt.xlabel('Operational Intensity (FLOP/Byte)', fontsize=12)
 plt.ylabel('FLOP/s', fontsize=12)
 plt.legend()
 plt.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
-plt.savefig("./DummyRoofline/dummyRoofline.png")
+plt.savefig("./DummyRoofline/dummyRoofline.pdf")
 
 
 # ENERGY values
@@ -67,7 +67,7 @@ plt.xlabel('Operational Intensity (FLOP/Byte)', fontsize=12)
 plt.ylabel('FLOP/J', fontsize=12)
 plt.legend()
 plt.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
-plt.savefig("./DummyRoofline/dummyArchline.png")
+plt.savefig("./DummyRoofline/dummyArchline.pdf")
 
 # POWER values
 pi_flop = epsilon_flop / tau_flop
@@ -107,4 +107,4 @@ plt.xlabel('Operational Intensity (Flop/Byte)', fontsize=12)
 plt.ylabel(f'Watt', fontsize=12)
 plt.legend()
 plt.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
-plt.savefig("./DummyRoofline/dummyPowerline.png")
+plt.savefig("./DummyRoofline/dummyPowerline.pdf")
